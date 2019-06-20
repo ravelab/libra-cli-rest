@@ -22,6 +22,7 @@ app.use(compression());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use('/api', api);
+app.use(express.static(__dirname + '/static', { dotfiles: 'allow' }));
 
 if (process.env.SSL_CERT) {
   const https = require('https');
