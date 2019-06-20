@@ -1,0 +1,10 @@
+{
+  "name": "libra-cli-web",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Alan Chen <alan.chen@ravelab.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
