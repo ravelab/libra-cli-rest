@@ -1,0 +1,13 @@
+enable ssl:
+https://flaviocopes.com/express-letsencrypt-ssl/
+
+UI:
+show account #, balance
+- buttons:
+send $
+receive $
+add $
+check balance
+share account #
+see history (TBD)
+

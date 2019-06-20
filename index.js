@@ -1,51 +1,27 @@
-const express = require("express");
-const { spawn } = require("child_process");
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-const WALLET_MNEMONIC =
-  process.env.WALLET_MNEMONIC || "../libra-cli-web/wallet.mnemonic";
-let cli = null;
-let lines = "";
-
-setInterval(() => {
-  cli.stdin.write(`a w ${WALLET_MNEMONIC}\n`);
-}, 1000 * 60);
-
-async function init() {
-  const LIBRA_DIR = process.env.LIBRA_DIR || "../libra";
-  cli = spawn(
-    process.env.START_SCRIPT || LIBRA_DIR + "/scripts/cli/start_cli_testnet.sh",
-    [],
-    {
-      cwd: LIBRA_DIR,
-      stdio: ["pipe", "pipe", process.stderr]
-    }
-  );
-
-  cli.stdout.on("data", data => {
-    const line = data.toString();
-    console.log(line);
-    lines = lines + line;
-  });
-
-  cli.stdin.write(`a r ${WALLET_MNEMONIC}\n`);
-}
-init();
+const express = require('express');
+const morgan = require('morgan');
+const helmet = require('helmet');
+const compression = require('compression');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const queue = require('express-queue');
+const api = require('./api');
 
 const app = express();
-
-app.get("/cli", async (req, res) => {
-  const { cmd, delay } = req.query;
-  lines = "";
-  cli.stdin.write(cmd + "\n"); // "a la\n"
-  await sleep(delay || 300);
-
-  res.status(200).send({ output: lines });
-});
+app.use(queue({ activeLimit: 1, queuedLimit: -1 }));
+app.set('trust proxy', true);
+app.use(helmet());
+app.use(cors());
+app.use(
+  morgan('tiny', {
+    skip: req => req.url === '/health'
+  })
+);
+app.use(compression());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use('/api', api);
 
 const port = process.env.PORT || 8080;
-app.listen(port, "0.0.0.0");
-console.log("Listen on port " + port);
+app.listen(port, '0.0.0.0');
+console.log('Listen on port ' + port);
