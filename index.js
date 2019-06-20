@@ -1,3 +1,4 @@
+const fs = require('fs');
 const express = require('express');
 const morgan = require('morgan');
 const helmet = require('helmet');
@@ -22,6 +23,23 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use('/api', api);
 
-const port = process.env.PORT || 8080;
-app.listen(port, '0.0.0.0');
-console.log('Listen on port ' + port);
+if (process.env.SSL_CERT) {
+  const https = require('https');
+  https
+    .createServer(
+      {
+        key: fs.readFileSync(process.env.SSL_KEY),
+        cert: fs.readFileSync(process.env.SSL_CERT),
+        ca: fs.readFileSync(process.env.SSL_CERT)
+      },
+      app
+    )
+    .listen(443, '0.0.0.0', () => {
+      console.log('Listen on port 443');
+    });
+} else {
+  const port = process.env.PORT || 8080;
+  app.listen(port, '0.0.0.0', () => {
+    console.log('Listen on port ' + port);
+  });
+}

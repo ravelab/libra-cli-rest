@@ -1,13 +1,11 @@
-enable ssl:
-https://flaviocopes.com/express-letsencrypt-ssl/
-
 UI:
-show account #, balance
+show account address, balance
 - buttons:
 send $
 receive $
 add $
+share account address
 check balance
-share account #
-see history (TBD)
+see history (disabled)
 
+initial: "Would you like to create a new Libra test account? Yes / No"
