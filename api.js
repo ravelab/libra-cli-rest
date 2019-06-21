@@ -22,7 +22,7 @@ router.get('/account', async (req, res) => {
   const { address } = req.query;
   const output = await runCmd(`q b ${address}`, 500);
   const balance = +lastWord(output);
-  res.status(200).send({ balance });
+  res.status(200).send({ account: { balance } });
 });
 
 // curl -X PUT localhost:8080/account?address=3486e8633188afe8137891619a6ad073dd445590994085a4e3dc07005c7a0c21\&amount=10

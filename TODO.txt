@@ -1,11 +1,10 @@
 UI:
 show account address, balance
 - buttons:
-send $
-receive $
 add $
+send $
 share account address
 check balance
-see history (disabled)
+see history (TODO)
 
 initial: "Would you like to create a new Libra test account? Yes / No"
