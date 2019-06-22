@@ -21,6 +21,9 @@ async function init() {
 
   cli.stdout.on('data', data => {
     const line = data.toString();
+    if (line.includes('mnemonic')) {
+      return;
+    }
     console.log(line);
     lines = lines + line;
   });
