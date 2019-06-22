@@ -29,10 +29,21 @@ async function init() {
 }
 init();
 
-const runCmd = async (cmd, delay) => {
+const runCmd = async (cmd, maxDelay, stopWord) => {
   lines = '';
   cli.stdin.write(cmd + '\n');
-  await sleep(delay || 300);
+  if (stopWord) {
+    let remainingDelay = maxDelay;
+    while (remainingDelay > 0) {
+      await sleep(1);
+      if (lines.includes(stopWord)) {
+        break;
+      }
+      remainingDelay--;
+    }
+  } else {
+    await sleep(maxDelay);
+  }
   return lines;
 };
 
