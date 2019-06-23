@@ -78,6 +78,7 @@ router.get('/history', async (req, res) => {
       5000,
       'Last event state'
     );
+    sub.nextPos = 0;
     while (true) {
       sub = getSubstring(sent, ' index:', 'proof:', sub.nextPos);
       if (!sub.str) {
@@ -104,6 +105,7 @@ router.get('/history', async (req, res) => {
       5000,
       'Last event state'
     );
+    sub.nextPos = 0;
     while (true) {
       sub = getSubstring(received, ' index:', 'proof:', sub.nextPos);
       if (!sub.str) {
