@@ -92,7 +92,7 @@ router.get('/history', async (req, res) => {
       sentEvents.push({
         index: tokens[2].slice(0, -1),
         account: tokens[7].slice(0, -1),
-        amount: tokens[9].slice(0, -1),
+        amount: tokens[9],
         gasUsed: sub.str.split(' ')[1]
       });
     }
@@ -115,7 +115,7 @@ router.get('/history', async (req, res) => {
       receivedEvents.push({
         index: tokens[2].slice(0, -1),
         account: tokens[7].slice(0, -1),
-        amount: tokens[9].slice(0, -1)
+        amount: tokens[9]
       });
     }
   }
