@@ -42,7 +42,7 @@ router.put('/account', async (req, res) => {
     return res.sendStatus(401);
   }
   const { address, amount } = req.query;
-  const output = await runCmd(`a mb ${address} ${amount}`, 5000, 'submitted');
+  const output = await runCmd(`a mb ${address} ${amount}`, 5000, 'Finished');
   res.status(200).send({ output });
 });
 
@@ -52,7 +52,7 @@ router.post('/transfer', async (req, res) => {
     return res.status(401);
   }
   const { sender, receiver, amount } = req.query;
-  const output = await runCmd(`tb ${sender} ${receiver} ${amount} 100`, 5000, 'submitted');
+  const output = await runCmd(`tb ${sender} ${receiver} ${amount} 100`, 5000, 'Finished');
   res.status(200).send({ output });
 });
 
