@@ -3,12 +3,17 @@ const { runCmd, lastWord } = require('./interface');
 
 const router = express.Router();
 
-// disable for now, too powerful
-// router.get("/cli", async (req, res) => {
-//   const { cmd, delay } = req.query;
-//   const output = await runCmd(cmd, delay);
-//   res.status(200).send({ output });
-// });
+const getSubstring = (str, startWith, endWith, pos = 0) => {
+  const start = str.indexOf(startWith, pos);
+  if (start === -1) {
+    return {};
+  }
+  const end = str.indexOf(endWith, start);
+  if (end === -1) {
+    return {};
+  }
+  return { str: str.substring(start, end), nextPos: end + endWith.length };
+};
 
 // curl -X POST localhost:8080/api/account
 router.post('/account', async (req, res) => {
@@ -37,7 +42,7 @@ router.put('/account', async (req, res) => {
     return res.sendStatus(401);
   }
   const { address, amount } = req.query;
-  const output = await runCmd(`a m ${address} ${amount}`, 500, 'submitted');
+  const output = await runCmd(`a mb ${address} ${amount}`, 5000, 'submitted');
   res.status(200).send({ output });
 });
 
@@ -47,20 +52,72 @@ router.post('/transfer', async (req, res) => {
     return res.status(401);
   }
   const { sender, receiver, amount } = req.query;
-  const output = await runCmd(`t ${sender} ${receiver} ${amount}`, 500, 'submitted');
+  const output = await runCmd(`tb ${sender} ${receiver} ${amount} 100`, 5000, 'submitted');
   res.status(200).send({ output });
 });
 
-// TODO
-// router.get('/transaction', async (req, res) => {
-//   // 'q ts ${address} ${seq} false'
-//   res.status(200).send();
-// });
-//
-// router.get('/transaction_count', async (req, res) => {
-//   // input: account address
-//   // 'q s ${address}'
-//   res.status(200).send();
-// });
+// curl -X GET localhost:8080/api/history?address=6a64890713425c735907bd3837cb0e0e707989ca57051876b162de3cf758614a
+router.get('/history', async (req, res) => {
+  if (req.headers.authorization !== process.env.AUTH) {
+    return res.sendStatus(401);
+  }
+  const { address } = req.query;
+  const state = await runCmd(`q as ${address}`, 5000, 'Blockchain Version');
+  let sub = getSubstring(state, 'sent_events_count', ',');
+  if (!sub.str) {
+    return res.status(200).send({ sentEvents: [], receivedEvents: [] });
+  }
+  const sentCount = sub.str.split(' ')[1];
+  sub = getSubstring(state, 'received_events_count', ',', sub.nextPos);
+  const receivedCount = sub.str.split(' ')[1];
+
+  let sentEvents = [];
+  if (sentCount > 0) {
+    const sent = await runCmd(
+      `q ev ${address} sent ${sentCount - 1} false 10`,
+      5000,
+      'Last event state'
+    );
+    while (true) {
+      sub = getSubstring(sent, ' index:', 'proof:', sub.nextPos);
+      if (!sub.str) {
+        break;
+      }
+      const tokens = sub.str.split(' ');
+      sub = getSubstring(sent, 'gas_used', '}', sub.nextPos);
+      if (!sub.str) {
+        break;
+      }
+      sentEvents.push({
+        index: tokens[2].slice(0, -1),
+        account: tokens[7].slice(0, -1),
+        amount: tokens[9].slice(0, -1),
+        gasUsed: sub.str.split(' ')[1]
+      });
+    }
+  }
+
+  let receivedEvents = [];
+  if (receivedCount > 0) {
+    const received = await runCmd(
+      `q ev ${address} received ${receivedCount - 1} false 10`,
+      5000,
+      'Last event state'
+    );
+    while (true) {
+      sub = getSubstring(received, ' index:', 'proof:', sub.nextPos);
+      if (!sub.str) {
+        break;
+      }
+      const tokens = sub.str.split(' ');
+      receivedEvents.push({
+        index: tokens[2].slice(0, -1),
+        account: tokens[7].slice(0, -1),
+        amount: tokens[9].slice(0, -1)
+      });
+    }
+  }
+  res.status(200).send({ sentEvents, receivedEvents });
+});
 
 module.exports = router;
