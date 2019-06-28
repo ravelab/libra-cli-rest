@@ -4,7 +4,7 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const WALLET_MNEMONIC = process.env.WALLET_MNEMONIC || '../libra-cli-web/wallet.mnemonic';
+const WALLET_MNEMONIC = process.env.WALLET_MNEMONIC || '../libra-cli-rest/wallet.mnemonic';
 let cli = null;
 let lines = '';
 
